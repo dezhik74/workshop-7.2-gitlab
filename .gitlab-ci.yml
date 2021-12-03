@@ -1,0 +1,52 @@
+# Образ, т.е. в каком окружении код будет запускаться
+image: node:latest
+
+# Описание всех предполагаемых этапов.
+# stage – этап билда, по дефолту их три: build, test, deploy.
+# Этапы всегда идут в четком порядке.
+stages:
+  - build
+  - lint and test
+  - publish
+
+build: # название процесса, потом увидим его в интерфейса
+  stage: build # Указываем на каком этапе запускается именно этот процесс
+  script:
+    - yarn install
+    - yarn build
+    # перекладываем уже собранное и запушенное из папки dist в папку public
+    # название важно – gitlab умеет деплоить как статику только то, что находится в папке
+    - mv dist public
+  artifacts: # Сохраняем артефакты
+    paths:
+      - public
+    # Можем указать время на которое мы хотим сохранить артефакты
+    expire_in: 1 day
+
+lint:
+  stage: lint and test
+  script:
+    - yarn install
+    - yarn lint
+  except:
+    - main
+
+# В качестве теста можно проверять опубликована ли была уже такая версия ранее
+check version:
+  stage: lint and test
+  script:
+    - chmod +x scripts/check-version.sh
+    - scripts/check-version.sh
+  except:
+    - main
+
+publish:
+  stage: publish
+  allow_failure: false
+  when: on_success
+  script:
+    # Для публикации нужна авторизация в пакетном менеджере
+    - npm config set registry https://registry.npmjs.org/
+    - yarn publish
+  only:
+    - main
