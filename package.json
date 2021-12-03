@@ -1,6 +1,6 @@
 {
-  "name": "route-256-ui-kit",
-  "version": "1.0.2",
+  "name": "route-256-ui-kit-dezhik74",
+  "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "serve": "vue-cli-service serve",
